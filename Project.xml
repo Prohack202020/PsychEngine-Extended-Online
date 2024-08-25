@@ -24,7 +24,7 @@
 	<!-- ______________________ PSYCH ENGINE CUSTOMIZATION ______________________ -->
 
 	<define name="MODS_ALLOWED" />
-	<define name="HSCRIPT_ALLOWED" unless="mobile" /> <!-- sscript isn't compatible with android (crashes clang?) -->
+	<define name="HSCRIPT_ALLOWED" /> <!-- sscript isn't compatible with android (crashes clang?)  --no -->
 	<define name="LUA_ALLOWED" if="cpp" />
 	<define name="ACHIEVEMENTS_ALLOWED" />
 	<define name="DISCORD_ALLOWED" if="windows" unless="hl" />
