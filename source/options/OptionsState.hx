@@ -1,89 +1,32 @@
 package options;
 
-#if desktop
-import Discord.DiscordClient;
-#end
-import flixel.FlxG;
-import flixel.FlxSprite;
-import flixel.addons.display.FlxGridOverlay;
-import flixel.group.FlxGroup.FlxTypedGroup;
-import flixel.addons.transition.FlxTransitionableState;
-import flixel.math.FlxMath;
-import flixel.text.FlxText;
-import flixel.util.FlxColor;
-import lime.utils.Assets;
-import flixel.FlxSubState;
-import flixel.FlxG;
-import flixel.FlxSprite;
-import flixel.util.FlxSave;
-import haxe.Json;
-import flixel.tweens.FlxEase;
-import flixel.tweens.FlxTween;
-import flixel.util.FlxTimer;
-import flixel.input.keyboard.FlxKey;
-import flixel.graphics.FlxGraphic;
-import options.OptionsState;
-import Controls;
-
-using StringTools;
+import online.states.Room;
+import states.MainMenuState;
+import backend.StageData;
 
 class OptionsState extends MusicBeatState
 {
-	var options:Array<String> = ['Note Colors', 'Controls', 'Adjust Delay and Combo', 'Graphics', 'Visuals', 'Gameplay' #if mobile , 'Mobile Options' #end];
+	var options:Array<String> = ['Note Colors', 'Controls', 'Adjust Delay and Combo', 'Graphics', 'Visuals and UI', 'Gameplay'];
 	private var grpOptions:FlxTypedGroup<Alphabet>;
 	private static var curSelected:Int = 0;
-	public static var isFreeplay:Bool = false;
 	public static var menuBG:FlxSprite;
+	public static var onPlayState:Bool = false;
+	public static var onOnlineRoom:Bool = false;
 
 	function openSelectedSubstate(label:String) {
-	    if (label != "Adjust Delay and Combo"){
-			removeVirtualPad();
-			persistentUpdate = false;
-		}
 		switch(label) {
 			case 'Note Colors':
-				#if mobile
-				removeVirtualPad();
-				#end
 				openSubState(new options.NotesSubState());
-			case 'Mobile Controls':
-    			FlxTransitionableState.skipNextTransIn = true;
-    			FlxTransitionableState.skipNextTransOut = true;
-    			MusicBeatState.switchState(new mobile.MobileControlsMenu());
 			case 'Controls':
-				#if mobile
-				if (ClientPrefs.VirtualPadAlpha == 0) { removeVirtualPad(); }
-				else {
-    				FlxTransitionableState.skipNextTransIn = true;
-    			    FlxTransitionableState.skipNextTransOut = true;
-    			    MusicBeatState.switchState(new mobile.MobileControlsMenu());
-			    }
-			    if (ClientPrefs.VirtualPadAlpha == 0) { openSubState(new options.ControlsSubState()); }
-				#else
 				openSubState(new options.ControlsSubState());
-				#end
 			case 'Graphics':
-				#if mobile
-				removeVirtualPad();
-				#end
 				openSubState(new options.GraphicsSettingsSubState());
-			case 'Visuals':
-				#if mobile
-				removeVirtualPad();
-				#end
-				openSubState(new options.VisualsSubState());
+			case 'Visuals and UI':
+				openSubState(new options.VisualsUISubState());
 			case 'Gameplay':
-				#if mobile
-				removeVirtualPad();
-				#end
 				openSubState(new options.GameplaySettingsSubState());
-			#if mobile
-			case 'Mobile Options':
-				removeVirtualPad();
-			    openSubState(new mobile.options.MobileOptionsSubState());
-			#end
 			case 'Adjust Delay and Combo':
-				LoadingState.loadAndSwitchState(new options.NoteOffsetState());
+				FlxG.switchState(() -> new options.NoteOffsetState());
 		}
 	}
 
@@ -91,21 +34,16 @@ class OptionsState extends MusicBeatState
 	var selectorRight:Alphabet;
 
 	override function create() {
-		Paths.clearStoredMemory();
-		Paths.clearUnusedMemory();
-
-		#if desktop
+		#if DISCORD_ALLOWED
 		DiscordClient.changePresence("Options Menu", null);
 		#end
-		
-		if (ClientPrefs.VirtualPadAlpha != 0) { options = ['Note Colors', 'Mobile Controls', 'Adjust Delay and Combo', 'Graphics', 'Visuals', 'Gameplay' #if mobile , 'Mobile Options' #end]; }
 
 		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
+		bg.antialiasing = ClientPrefs.data.antialiasing;
 		bg.color = 0xFFea71fd;
 		bg.updateHitbox();
 
 		bg.screenCenter();
-		bg.antialiasing = ClientPrefs.globalAntialiasing;
 		add(bg);
 
 		grpOptions = new FlxTypedGroup<Alphabet>();
@@ -127,21 +65,13 @@ class OptionsState extends MusicBeatState
 		changeSelection();
 		ClientPrefs.saveSettings();
 
-		changeSelection();
-		ClientPrefs.saveSettings();
-
-		#if mobile
-		addVirtualPad(UP_DOWN, A_B);
-		#end
-
 		super.create();
+
+		online.GameClient.send("status", "In the Game Options");
 	}
 
 	override function closeSubState() {
 		super.closeSubState();
-		removeVirtualPad();
-		addVirtualPad(UP_DOWN, A_B);
-		persistentUpdate = true;
 		ClientPrefs.saveSettings();
 	}
 
@@ -154,43 +84,21 @@ class OptionsState extends MusicBeatState
 		if (controls.UI_DOWN_P) {
 			changeSelection(1);
 		}
-		
+
 		if (controls.BACK) {
-	     	if (PauseSubState.MoveOption) {
-				MusicBeatState.switchState(new PlayState());
-				PauseSubState.MoveOption = false;
-			}
-			else if (PlayState.MoveOption) {
-				MusicBeatState.switchState(new PlayState());
-				PlayState.MoveOption = false;
-			}
-			else if (OptionsState.isFreeplay == true) {
-			    MusicBeatState.switchState(new FreeplayState());
-			    OptionsState.isFreeplay = false;
-			} else {
-    			if (ClientPrefs.MainMenuStyle == '0.6.3')
-    				MusicBeatState.switchState(new MainMenuStateOld());
-    			else
-    				MusicBeatState.switchState(new MainMenuState());
-			}
 			FlxG.sound.play(Paths.sound('cancelMenu'));
+			if(onPlayState)
+			{
+				StageData.loadDirectory(PlayState.SONG);
+				LoadingState.loadAndSwitchState(new PlayState());
+				FlxG.sound.music.volume = 0;
+			}
+			else if (onOnlineRoom) {
+				LoadingState.loadAndSwitchState(new Room());
+			}
+			else FlxG.switchState(() -> new MainMenuState());
 		}
-
-		#if mobile
-		if (_virtualpad.buttonX.justPressed) {
-			FlxTransitionableState.skipNextTransIn = true;
-			FlxTransitionableState.skipNextTransOut = true;
-			MusicBeatState.switchState(new mobile.MobileControlsMenu());
-		}
-		if (_virtualpad.buttonY.justPressed) {
-			removeVirtualPad();
-			openSubState(new mobile.options.MobileOptionsSubState());
-		}
-		#end
-
-		if (controls.ACCEPT) {
-			openSelectedSubstate(options[curSelected]);
-		}
+		else if (controls.ACCEPT) openSelectedSubstate(options[curSelected]);
 	}
 	
 	function changeSelection(change:Int = 0) {
@@ -216,5 +124,11 @@ class OptionsState extends MusicBeatState
 			}
 		}
 		FlxG.sound.play(Paths.sound('scrollMenu'));
+	}
+
+	override function destroy()
+	{
+		ClientPrefs.loadPrefs();
+		super.destroy();
 	}
 }

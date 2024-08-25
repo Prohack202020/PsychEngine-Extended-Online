@@ -1,61 +1,43 @@
-// Psych
 #if !macro
-import Paths;
+//Discord API
+#if DISCORD_ALLOWED
+import backend.Discord;
 #end
 
-// Extra
-import extrastates.FreeplayStatePsych;
-import extrastates.MainMenuStateOld;
-import backend.ui.*; //Psych-UI
-import backend.animation.PsychAnimationController;
-import FreeplayState;
-import flixel.addons.ui.*;
-
-// 0.7x Support
-import Difficulty;
-// import Mods; it brokes TitleState
-
-// FlxAnimate
-#if flxanimate
-import flxanimate.*;
+//Psych
+#if LUA_ALLOWED
+import llua.*;
+import llua.Lua;
 #end
 
-#if sys
-import sys.*;
-import sys.io.*;
-#elseif js
-import js.html.*;
-#end
+import backend.Paths;
+import backend.Controls;
+import backend.CoolUtil;
+import backend.MusicBeatState;
+import backend.MusicBeatSubstate;
+import backend.CustomFadeTransition;
+import backend.ClientPrefs;
+import backend.Conductor;
+import backend.BaseStage;
+import backend.Difficulty;
+import backend.Mods;
 
-// Mobile
-import mobile.SUtil;
-import mobile.SwipeUtil;
-import mobile.TouchUtil;
+import objects.Alphabet;
+import objects.BGSprite;
 
-// Android
-#if android
-import android.content.Context as AndroidContext;
-import android.widget.Toast as AndroidToast;
-import android.os.Environment as AndroidEnvironment;
-import android.Permissions as AndroidPermissions;
-import android.Settings as AndroidSettings;
-import android.Tools as AndroidTools;
-import android.os.BatteryManager as AndroidBatteryManager;
-#end
-
-// openfl
-import lime.utils.Assets;
-import openfl.utils.Assets as OpenFlAssets;
-import openfl.Lib;
+import states.PlayState;
+import states.LoadingState;
 
 //Flixel
+#if (flixel >= "5.3.0")
 import flixel.sound.FlxSound;
+#else
+import flixel.system.FlxSound;
+#end
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxCamera;
-import flixel.util.FlxDestroyUtil;
 import flixel.math.FlxMath;
-import flixel.math.FlxPoint;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 import flixel.text.FlxText;
@@ -65,3 +47,4 @@ import flixel.group.FlxSpriteGroup;
 import flixel.group.FlxGroup.FlxTypedGroup;
 
 using StringTools;
+#end

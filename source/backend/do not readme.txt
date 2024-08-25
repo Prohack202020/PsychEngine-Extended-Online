@@ -1,1 +1,0 @@
-The files here are for custom menus created for 0.7x
