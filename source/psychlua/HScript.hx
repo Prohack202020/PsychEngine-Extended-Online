@@ -174,7 +174,7 @@ class HScript extends SScript
 		#end
 	}
 
-	public function executeCode(?funcToRun:String = null, ?funcArgs:Array<Dynamic> = null):tea
+	public function executeCode(?funcToRun:String = null, ?funcArgs:Array<Dynamic> = null):Tea
 	{
 		if (funcToRun == null) return null;
 
