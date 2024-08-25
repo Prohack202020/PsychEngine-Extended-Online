@@ -47,8 +47,10 @@
     },
     {
       "name": "SScript",
-      "type": "haxelib",
-      "version": "17.0.618"
+      "type": "git",
+      "dir": null,
+      "ref": "main",
+      "url": "https://github.com/TheWorldMachinima/SScript.git"
     },
     {
       "name": "discord_rpc",
