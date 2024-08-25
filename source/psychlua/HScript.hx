@@ -7,6 +7,7 @@ import psychlua.CustomSubstate;
 
 #if HSCRIPT_ALLOWED
 import tea.SScript;
+import tea
 class HScript extends SScript
 {
 	public var parentLua:FunkinLua;
@@ -173,7 +174,7 @@ class HScript extends SScript
 		#end
 	}
 
-	public function executeCode(?funcToRun:String = null, ?funcArgs:Array<Dynamic> = null):Tea
+	public function executeCode(?funcToRun:String = null, ?funcArgs:Array<Dynamic> = null):tea
 	{
 		if (funcToRun == null) return null;
 
